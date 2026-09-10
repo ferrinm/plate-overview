@@ -1,0 +1,78 @@
+# Tests on every push and PR; publishes to PyPI on a v* tag.
+# Trusted publishing (OIDC) — no API token in secrets. Configure the
+# `pypi` environment and the PyPI publisher before the first tag.
+name: tests
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: ${{ matrix.platform }} py${{ matrix.python-version }}
+    runs-on: ${{ matrix.platform }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # setuptools_scm derives the version from tags.
+          fetch-depth: 0
+
+      - name: Setup python
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          activate-environment: "true"
+
+      # This runs the platform-specific tests declared in tox.ini.
+      - name: Test with tox
+        run: uvx --with tox-gh-actions tox
+        env:
+          PLATFORM: ${{ matrix.platform }}
+
+      - name: Coverage
+        uses: codecov/codecov-action@v7
+
+  build-and-inspect-package:
+    name: Build & inspect package.
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: hynek/build-and-inspect-python-package@v3.0.1
+
+  deploy:
+    # Runs when a commit tagged v* is pushed.
+    needs: [test, build-and-inspect-package]
+    runs-on: ubuntu-latest
+    if: contains(github.ref, 'tags')
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Download built artifact to dist/
+        uses: actions/download-artifact@v8
+        with:
+          name: Packages
+          path: dist
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

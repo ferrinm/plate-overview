@@ -10,6 +10,8 @@ a version anywhere in this repo.
 
 ## [Unreleased]
 
+## [0.0.1] - 2026-09-10
+
 ### Added
 
 - Repository scaffold: packaging, tox, CI, and a headless smoke test.

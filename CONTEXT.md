@@ -44,6 +44,36 @@ contracts cross rather than nest. The port needs render-time facts that
 a reader can omit. A reader carries analysis-time members that the
 renderer never reads.
 
+## One color rule, not two that match
+
+The same argument covers the colors. A merge adds one black-to-color
+ramp per channel, so a reviewer reads which channel holds the puncta
+from its color. A consumer that colors channels its own way drifts from
+the renderer, and the reviewer then reads the wrong channel.
+
+The rule therefore lives in this package too, once. It is public:
+
+- `resolve_channel_colors` is the whole rule, for a whole plate.
+- `FLUOROPHORE_COLORS` is the canonical fluorophore name → color
+  table, and `fluorophore_color` is its lookup.
+
+A consumer calls `resolve_channel_colors`. The table alone is only one
+of four rules, so importing it by itself still drifts.
+
+The vocabulary:
+
+- The **color ladder** is six slots, each owning one representative
+  excitation wavelength. A channel takes the slot with the nearest
+  representative.
+- The **base set** is the four slots a plate uses when no two channels
+  collide: cyan, green, yellow and magenta.
+- The **spares** are the other two, `blue` and `red`. Only a collision
+  opens them.
+- The **resolution order** is explicit entry, then the table, then the
+  parsed wavelength, then channel position.
+
+ADR-0004 holds the ladder, the parse rules and the reasoning.
+
 ## The gathering loop
 
 This package owns the **gathering loop**. The reason is a memory

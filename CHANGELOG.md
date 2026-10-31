@@ -10,12 +10,18 @@ a version anywhere in this repo.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-30
+
 ### Added
 
+- `resolve_channel_colors`, now public. It is the whole color rule for
+  a whole plate. A consumer calls this rather than coloring channels
+  its own way, because a second rule agrees today and drifts tomorrow.
 - `FLUOROPHORE_COLORS` and `fluorophore_color`, the canonical
   fluorophore name → color table, moved out of `pyphenix._colormaps`
   (#6). Both are public, because there must be exactly one such table
-  and `pyphenix` must import it rather than keep a copy.
+  and `pyphenix` must import it rather than keep a copy. The table is
+  only one of four rules, so importing it alone still drifts.
 - `Brightfield` keeps its gray, and the synonyms `BF`, `TL` and `Trans`
   now reach it too. `BF` and `TL` match as a whole word, because two
   letters appear inside too many other strings.

@@ -75,7 +75,22 @@ class PlateFacts(_RequiredPlateFacts, total=False):
     channel_colors : dict
         ``{channel_id: color_name}`` for merge compositing. See
         :data:`plate_overview._colors.COLOR_RGB` for the accepted names.
-        Omit it and the renderer assigns colors by channel order.
+        An entry here always wins for the channel it names.
+
+        Omit a channel and the renderer derives its color from
+        *channel_names*, in this order:
+
+        1. :data:`plate_overview.FLUOROPHORE_COLORS`, the fluorophore
+           name table. ``DAPI`` gives cyan, ``Cy3`` gives yellow, and
+           ``Brightfield`` gives gray.
+        2. An excitation wavelength parsed out of the name, placed on
+           the color ladder. ``Ex 475`` gives green. Two channels that
+           land in one ladder slot spread apart, so a merge never hides
+           one channel inside another.
+        3. The channel order, as a last resort.
+
+        See ``docs/adr/0004-a-channel-takes-its-color-from-its-name.md``
+        for the ladder, the parse rules and the reasoning.
     source_name : str
         Name of the acquisition the pixels come from. The JSON sidecar
         records the basename of this value, never a directory path.

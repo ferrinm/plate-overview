@@ -228,7 +228,7 @@ def render_plate_overview(
         ch_id: all_names.get(ch_id, "?") for ch_id in sel_channels
     }
     ch_colors = resolve_channel_colors(
-        sel_channels, plate.get("channel_colors")
+        sel_channels, plate.get("channel_colors"), channel_names
     )
 
     # Effective µm per thumb pixel — derived from one well's downsample.
